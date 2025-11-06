@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 import requests
@@ -7,16 +8,23 @@ from pprint import pprint
 
 main_page = "https://habr.com/ru/articles/top/daily/"
 
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+
 def get_url_html(url: str) -> str:
     res = requests.get(
         url,
         headers={
             "User-Agent": UserAgent().google,
-    })
+        })
     return res.text
+
 
 def get_soup(html_text: str) -> BeautifulSoup:
     return BeautifulSoup(html_text, "lxml")
+
 
 @dataclass
 class ArticleData:
@@ -26,8 +34,7 @@ class ArticleData:
     text: str
 
 
-
-def get_all_posts(soup:BeautifulSoup) -> list[ArticleData]:
+def get_all_posts(soup: BeautifulSoup) -> list[ArticleData]:
     posts_data = []
     all_articles_soup = soup.find_all("article", class_="tm-articles-list__item")
     for article_soup in all_articles_soup:
@@ -44,17 +51,18 @@ def get_all_posts(soup:BeautifulSoup) -> list[ArticleData]:
         ))
     return posts_data
 
+
 def get_article_text(url: str) -> str:
     try:
         article_html = get_url_html(url)
         soup = get_soup(article_html)
-        article_text = soup.find('article', class_= 'tm-article-presenter__content')
+        article_text = soup.find('article', class_='tm-article-presenter__content')
         if article_text:
-            return article_text.get_text(separator='\n', strip=True)
+            logger.info(f"получение данных")
+            return article_text.get_text(strip=True)
         return "Текст статьи не найден"
     except Exception as e:
         return f"Ошибка при получении текста: {str(e)}"
-
 
 
 def main():
@@ -62,6 +70,7 @@ def main():
     soup = get_soup(html)
     posts = get_all_posts(soup)
     pprint(posts)
+    logger.info(f"таска завершена")
 
 
 if __name__ == "__main__":
