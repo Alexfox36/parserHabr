@@ -52,6 +52,7 @@ def get_all_posts(soup: BeautifulSoup) -> list[ArticleData]:
     return posts_data
 
 
+
 def get_article_text(url: str) -> str:
     try:
         article_html = get_url_html(url)
